@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Job {
-    pub id: u32,
+    pub id: i32,
     pub name: String,
     pub description: String,
-    pub job_type_id: u32,
+    pub job_type_id: i32,
 }

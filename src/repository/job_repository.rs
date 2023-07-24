@@ -1,10 +1,10 @@
 use crate::entity::job::Job;
 
-pub fn get_all(pool: &sqlx::Pool<sqlx::Postgres>) -> Vec<Job> {
-    return vec![Job {
-        id: 1,
-        name: "Job 1".to_string(),
-        description: "Job 1 description".to_string(),
-        job_type_id: 1,
-    }];
+pub async fn get_all_async(pool: &sqlx::Pool<sqlx::Postgres>) -> Vec<Job> {
+    let jobs = sqlx::query_as::<_, Job>("SELECT * FROM tb_jobs")
+        .fetch_all(pool)
+        .await
+        .unwrap();
+
+    return jobs;
 }

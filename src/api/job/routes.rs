@@ -4,7 +4,7 @@ use crate::{repository::job_repository, AppState};
 
 #[get("")]
 async fn index(data: web::Data<AppState>) -> impl Responder {
-    let results = job_repository::get_all(&data.db);
+    let results = job_repository::get_all_async(&data.db).await;
 
     return HttpResponse::Ok().json(results);
 }
