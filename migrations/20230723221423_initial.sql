@@ -9,7 +9,8 @@ CREATE TABLE tb_jobs (
 	name VARCHAR(255) NOT NULL,
 	description TEXT NOT NULL,
 	job_type_id INT NOT NULL,
-	date DATE NOT NULL,
+	start_date TIMESTAMPTZ NOT NULL,
+	end_date TIMESTAMPTZ NOT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (job_type_id) REFERENCES tb_job_types(id)
 );

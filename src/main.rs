@@ -1,13 +1,6 @@
-mod api;
-mod entity;
-mod repository;
-
 use actix_web::middleware::{Logger, NormalizePath};
 use actix_web::{web, App, HttpServer};
-
-pub struct AppState {
-    db: sqlx::Pool<sqlx::Postgres>,
-}
+use easy_lance::{api, AppState};
 
 fn get_database_url() -> String {
     let database_url = match std::env::var("DATABASE_URL") {
