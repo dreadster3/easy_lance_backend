@@ -1,4 +1,6 @@
 mod job;
+mod job_type;
 
-pub mod errors;
+mod errors;
+
 pub mod routes;

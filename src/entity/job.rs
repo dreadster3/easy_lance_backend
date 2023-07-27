@@ -15,6 +15,8 @@ pub struct Job {
     pub end_date: Option<chrono::DateTime<chrono::Utc>>,
 
     #[serde(skip_serializing)]
+    pub modified_at: Option<chrono::NaiveDateTime>,
+    #[serde(skip_serializing)]
     pub created_at: Option<chrono::NaiveDateTime>,
 
     pub job_type_id: i32,
@@ -35,6 +37,7 @@ impl Job {
             start_date: Option::from(start_date),
             end_date: Option::from(end_date),
             created_at: Option::from(chrono::Local::now().naive_local()),
+            modified_at: Option::from(chrono::Local::now().naive_local()),
             job_type_id,
         }
     }
@@ -43,8 +46,8 @@ impl Job {
         Job::new(
             dto.name,
             dto.description,
-            chrono::Utc::now(),
-            chrono::Utc::now(),
+            dto.start_date,
+            dto.end_date,
             dto.job_type_id,
         )
     }
