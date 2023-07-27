@@ -1,16 +1,36 @@
 use crate::entity::job::Job;
 
-pub async fn get_all_async(pool: &sqlx::Pool<sqlx::Postgres>) -> Vec<Job> {
-    let jobs = sqlx::query_as!(Job, "SELECT * FROM tb_jobs")
+use super::errors::RepositoryError;
+
+type Result<T> = std::result::Result<T, RepositoryError>;
+
+pub async fn get_all_async(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<Vec<Job>> {
+    let result = match sqlx::query_as!(Job, "SELECT * FROM tb_jobs")
         .fetch_all(pool)
         .await
-        .unwrap();
+    {
+        Ok(jobs) => Ok(jobs),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
 
-    return jobs;
+    return result;
 }
 
-pub async fn create_async(pool: &sqlx::Pool<sqlx::Postgres>, job: Job) -> Job {
-    let job_inserted = sqlx::query_as!(Job,
+pub async fn get_by_id_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Result<Job> {
+    let result = match sqlx::query_as!(Job, "SELECT * FROM tb_jobs WHERE id = $1", id)
+        .fetch_one(pool)
+        .await
+    {
+        Ok(job) => Ok(job),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::NotFound(id)),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
+
+pub async fn create_async(pool: &sqlx::Pool<sqlx::Postgres>, job: Job) -> Result<Job> {
+    let result = match sqlx::query_as!(Job,
         "INSERT INTO tb_jobs (name, description, start_date, end_date, job_type_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
         job.name,
         job.description,
@@ -19,8 +39,30 @@ pub async fn create_async(pool: &sqlx::Pool<sqlx::Postgres>, job: Job) -> Job {
         job.job_type_id
     )
     .fetch_one(pool)
-    .await
-    .unwrap();
+    .await {
+        Ok(job) => Ok(job),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
 
-    return job_inserted;
+    return result;
+}
+
+pub async fn update_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32, job: Job) -> Result<Job> {
+    let result = match sqlx::query_as!(Job,
+        "UPDATE tb_jobs SET name = $1, description = $2, start_date = $3, end_date = $4, job_type_id = $5 WHERE id = $6 RETURNING *",
+        job.name,
+        job.description,
+        job.start_date,
+        job.end_date,
+        job.job_type_id,
+        id
+    )
+    .fetch_one(pool)
+    .await {
+        Ok(job) => Ok(job),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::NotFound(id)),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
 }
