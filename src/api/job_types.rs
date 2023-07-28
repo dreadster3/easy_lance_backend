@@ -5,8 +5,8 @@ use actix_web::{
 };
 
 use crate::{
-    dtos::job_type_dto::JobTypeDto, entity::job_type::JobType, repository::job_type_repository,
-    AppState,
+    auth::user_identity::UserIdentity, dtos::job_type_dto::JobTypeDto, entity::job_type::JobType,
+    repository::job_type_repository, AppState,
 };
 
 use super::errors::ApiError;
@@ -14,24 +14,33 @@ use super::errors::ApiError;
 type Result<T> = std::result::Result<T, ApiError>;
 
 #[get("")]
-async fn get_all(data: web::Data<AppState>) -> Result<HttpResponse> {
-    let result = job_type_repository::get_all_async(&data.db).await?;
+async fn get_all(data: web::Data<AppState>, identity: UserIdentity) -> Result<HttpResponse> {
+    let result = job_type_repository::get_all_async(&data.db, identity.id).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
 
 #[get("/{id}")]
-async fn get_by_id(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
-    let result = job_type_repository::get_by_id_async(&data.db, id.into_inner()).await?;
+async fn get_by_id(
+    data: web::Data<AppState>,
+    identity: UserIdentity,
+    id: web::Path<i32>,
+) -> Result<HttpResponse> {
+    let result =
+        job_type_repository::get_by_id_async(&data.db, identity.id, id.into_inner()).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
 
 #[post("")]
-async fn create(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Result<HttpResponse> {
-    let job_type: JobType = body.into_inner().into();
+async fn create(
+    data: web::Data<AppState>,
+    identity: UserIdentity,
+    body: Json<JobTypeDto>,
+) -> Result<HttpResponse> {
+    let job_type = body.into_inner().to_entity(identity.id);
 
-    if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
+    if job_type_repository::check_duplicate_by_name(&data.db, identity.id, &job_type.name).await? {
         return Err(ApiError::DuplicateError("JobType".to_string()));
     }
 
@@ -43,13 +52,14 @@ async fn create(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Result<Htt
 #[put("/{id}")]
 async fn update(
     data: web::Data<AppState>,
+    identity: UserIdentity,
     id: web::Path<i32>,
     body: Json<JobTypeDto>,
 ) -> Result<HttpResponse> {
     let job_type_id = id.into_inner();
-    let job_type: JobType = body.into_inner().into();
+    let job_type: JobType = body.into_inner().to_entity(identity.id);
 
-    if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
+    if job_type_repository::check_duplicate_by_name(&data.db, identity.id, &job_type.name).await? {
         return Err(ApiError::DuplicateError("JobType".to_string()));
     }
 
@@ -59,10 +69,14 @@ async fn update(
 }
 
 #[delete("/{id}")]
-async fn delete(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
+async fn delete(
+    data: web::Data<AppState>,
+    identity: UserIdentity,
+    id: web::Path<i32>,
+) -> Result<HttpResponse> {
     let job_type_id = id.into_inner();
 
-    job_type_repository::delete_async(&data.db, job_type_id).await?;
+    job_type_repository::delete_async(&data.db, identity.id, job_type_id).await?;
 
     return Ok(HttpResponse::NoContent().finish());
 }

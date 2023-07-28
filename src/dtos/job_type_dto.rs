@@ -7,8 +7,8 @@ pub struct JobTypeDto {
     pub name: String,
 }
 
-impl Into<JobType> for JobTypeDto {
-    fn into(self) -> JobType {
-        JobType::new(self.name)
+impl JobTypeDto {
+    pub fn to_entity(self, user_id: i32) -> JobType {
+        JobType::new(user_id, self.name)
     }
 }
