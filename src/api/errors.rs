@@ -10,6 +10,8 @@ pub enum ApiError {
     DuplicateError(String),
     #[error("{0}")]
     RepositoryError(RepositoryError),
+    #[error("Unauthorized")]
+    UnauthorizedError,
 }
 
 impl ResponseError for ApiError {
@@ -17,6 +19,7 @@ impl ResponseError for ApiError {
         match self {
             ApiError::RepositoryError(err) => err.status_code(),
             ApiError::DuplicateError(_) => actix_web::http::StatusCode::BAD_REQUEST,
+            ApiError::UnauthorizedError => actix_web::http::StatusCode::UNAUTHORIZED,
         }
     }
 

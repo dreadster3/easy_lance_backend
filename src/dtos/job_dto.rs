@@ -13,9 +13,10 @@ pub struct JobDto {
     pub job_type_id: i32,
 }
 
-impl Into<Job> for JobDto {
-    fn into(self) -> crate::entity::job::Job {
+impl JobDto {
+    pub fn to_entity(self, user_id: i32) -> Job {
         Job::new(
+            user_id,
             self.name,
             self.description,
             self.start_date,

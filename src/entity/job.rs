@@ -19,11 +19,15 @@ pub struct Job {
     #[serde(skip_serializing)]
     pub created_at: Option<chrono::NaiveDateTime>,
 
+    #[serde(skip_serializing)]
+    pub user_id: i32,
+
     pub job_type_id: i32,
 }
 
 impl Job {
     pub fn new(
+        user_id: i32,
         name: String,
         description: String,
         start_date: chrono::DateTime<chrono::Utc>,
@@ -34,6 +38,7 @@ impl Job {
             id: 0i32,
             name,
             description,
+            user_id,
             start_date: Option::from(start_date),
             end_date: Option::from(end_date),
             created_at: Option::from(chrono::Local::now().naive_local()),

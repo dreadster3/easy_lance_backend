@@ -1,5 +1,6 @@
-mod job;
-mod job_type;
+mod job_types;
+mod jobs;
+mod users;
 
 mod errors;
 

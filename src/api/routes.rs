@@ -1,9 +1,10 @@
-use super::{job, job_type};
+use super::{job_types, jobs, users};
 
 pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
     let scope = actix_web::web::scope("api")
-        .configure(job::register_routes)
-        .configure(job_type::register_routes);
+        .configure(users::register_routes)
+        .configure(jobs::register_routes)
+        .configure(job_types::register_routes);
 
     cfg.service(scope);
 }
