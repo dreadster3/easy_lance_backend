@@ -1,6 +1,6 @@
 use crate::entity::job_type::JobType;
 
-use super::errors::RepositoryError;
+use super::errors::{NotFoundError, RepositoryError};
 
 type Result<T> = std::result::Result<T, RepositoryError>;
 
@@ -22,7 +22,23 @@ pub async fn get_by_id_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Resu
         .await
     {
         Ok(result) => Ok(result),
-        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::NotFound(id)),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
+        Err(e) => Err(RepositoryError::InternalError(e)),
+    };
+
+    return result;
+}
+
+pub async fn get_by_name_async(pool: &sqlx::Pool<sqlx::Postgres>, name: &str) -> Result<JobType> {
+    let result = match sqlx::query_as!(JobType, "SELECT * FROM tb_job_types WHERE name = $1", name)
+        .fetch_one(pool)
+        .await
+    {
+        Ok(result) => Ok(result),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ByProperty(
+            "name".to_string(),
+            name.to_string(),
+        ))),
         Err(e) => Err(RepositoryError::InternalError(e)),
     };
 
@@ -62,6 +78,24 @@ pub async fn update_async(
     .await
     {
         Ok(result) => Ok(result),
+        Err(e) => Err(RepositoryError::InternalError(e)),
+    };
+
+    return result;
+}
+
+pub async fn check_duplicate_by_name(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    name: &str,
+) -> Result<bool> {
+    let result = match sqlx::query!(
+        "SELECT EXISTS(SELECT 1 FROM tb_job_types WHERE name = $1)",
+        name
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(result) => Ok(result.exists.unwrap()),
         Err(e) => Err(RepositoryError::InternalError(e)),
     };
 

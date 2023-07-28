@@ -1,6 +1,6 @@
 use crate::entity::job::Job;
 
-use super::errors::RepositoryError;
+use super::errors::{NotFoundError, RepositoryError};
 
 type Result<T> = std::result::Result<T, RepositoryError>;
 
@@ -22,7 +22,7 @@ pub async fn get_by_id_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Resu
         .await
     {
         Ok(job) => Ok(job),
-        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::NotFound(id)),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
         Err(err) => Err(RepositoryError::InternalError(err)),
     };
 
@@ -62,7 +62,7 @@ pub async fn update_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32, job: Job) 
     .fetch_one(pool)
     .await {
         Ok(job) => Ok(job),
-        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::NotFound(id)),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
         Err(err) => Err(RepositoryError::InternalError(err)),
     };
 

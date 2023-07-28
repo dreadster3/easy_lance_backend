@@ -41,14 +41,4 @@ impl Job {
             job_type_id,
         }
     }
-
-    pub fn from_dto(dto: crate::dtos::job_dto::JobDto) -> Self {
-        Job::new(
-            dto.name,
-            dto.description,
-            dto.start_date,
-            dto.end_date,
-            dto.job_type_id,
-        )
-    }
 }

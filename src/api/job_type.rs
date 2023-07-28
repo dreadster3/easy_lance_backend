@@ -29,8 +29,13 @@ async fn get_by_id_async(data: web::Data<AppState>, id: web::Path<i32>) -> Resul
 
 #[post("")]
 async fn create_async(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Result<HttpResponse> {
-    let job = JobType::from_dto(body.into_inner());
-    let result = job_type_repository::create_async(&data.db, job).await?;
+    let job_type: JobType = body.into_inner().into();
+
+    if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
+        return Err(ApiError::DuplicateError("JobType".to_string()));
+    }
+
+    let result = job_type_repository::create_async(&data.db, job_type).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
@@ -41,8 +46,19 @@ async fn update_async(
     id: web::Path<i32>,
     body: Json<JobTypeDto>,
 ) -> Result<HttpResponse> {
-    let job = JobType::from_dto(body.into_inner());
-    let result = job_type_repository::update_async(&data.db, id.into_inner(), job).await?;
+    let job_type_id = id.into_inner();
+    let job_type: JobType = body.into_inner().into();
+
+    match job_type_repository::get_by_id_async(&data.db, job_type_id).await {
+        Ok(j) => j,
+        Err(err) => return Err(ApiError::from(err)),
+    };
+
+    if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
+        return Err(ApiError::DuplicateError("JobType".to_string()));
+    }
+
+    let result = job_type_repository::update_async(&data.db, job_type_id, job_type).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }

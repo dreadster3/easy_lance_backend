@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::dtos::job_type_dto::JobTypeDto;
+
 #[derive(Serialize, sqlx::FromRow)]
 pub struct JobType {
     pub id: i32,
@@ -20,9 +22,5 @@ impl JobType {
             created_at: Option::from(chrono::Local::now().naive_local()),
             modified_at: Option::from(chrono::Local::now().naive_local()),
         }
-    }
-
-    pub fn from_dto(dto: crate::dtos::job_type_dto::JobTypeDto) -> Self {
-        JobType::new(dto.name)
     }
 }
