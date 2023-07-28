@@ -1,5 +1,5 @@
 use actix_web::{
-    get, post, put,
+    delete, get, post, put,
     web::{self, Json},
     HttpResponse,
 };
@@ -14,21 +14,21 @@ use super::errors::ApiError;
 type Result<T> = std::result::Result<T, ApiError>;
 
 #[get("")]
-async fn get_all_async(data: web::Data<AppState>) -> Result<HttpResponse> {
+async fn get_all(data: web::Data<AppState>) -> Result<HttpResponse> {
     let result = job_type_repository::get_all_async(&data.db).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
 
 #[get("/{id}")]
-async fn get_by_id_async(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
+async fn get_by_id(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
     let result = job_type_repository::get_by_id_async(&data.db, id.into_inner()).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
 
 #[post("")]
-async fn create_async(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Result<HttpResponse> {
+async fn create(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Result<HttpResponse> {
     let job_type: JobType = body.into_inner().into();
 
     if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
@@ -37,22 +37,17 @@ async fn create_async(data: web::Data<AppState>, body: Json<JobTypeDto>) -> Resu
 
     let result = job_type_repository::create_async(&data.db, job_type).await?;
 
-    return Ok(HttpResponse::Ok().json(result));
+    return Ok(HttpResponse::Created().json(result));
 }
 
 #[put("/{id}")]
-async fn update_async(
+async fn update(
     data: web::Data<AppState>,
     id: web::Path<i32>,
     body: Json<JobTypeDto>,
 ) -> Result<HttpResponse> {
     let job_type_id = id.into_inner();
     let job_type: JobType = body.into_inner().into();
-
-    match job_type_repository::get_by_id_async(&data.db, job_type_id).await {
-        Ok(j) => j,
-        Err(err) => return Err(ApiError::from(err)),
-    };
 
     if job_type_repository::check_duplicate_by_name(&data.db, &job_type.name).await? {
         return Err(ApiError::DuplicateError("JobType".to_string()));
@@ -63,12 +58,22 @@ async fn update_async(
     return Ok(HttpResponse::Ok().json(result));
 }
 
+#[delete("/{id}")]
+async fn delete(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
+    let job_type_id = id.into_inner();
+
+    job_type_repository::delete_async(&data.db, job_type_id).await?;
+
+    return Ok(HttpResponse::NoContent().finish());
+}
+
 pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
     let scope = actix_web::web::scope("jobtypes")
-        .service(get_all_async)
-        .service(get_by_id_async)
-        .service(create_async)
-        .service(update_async);
+        .service(get_all)
+        .service(get_by_id)
+        .service(create)
+        .service(update)
+        .service(delete);
 
     cfg.service(scope);
 }

@@ -84,6 +84,23 @@ pub async fn update_async(
     return result;
 }
 
+pub async fn delete_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Result<JobType> {
+    let result = match sqlx::query_as!(
+        JobType,
+        "DELETE FROM tb_job_types WHERE id = $1 RETURNING *",
+        id
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
+        Err(e) => Err(RepositoryError::InternalError(e)),
+    };
+
+    return result;
+}
+
 pub async fn check_duplicate_by_name(
     pool: &sqlx::Pool<sqlx::Postgres>,
     name: &str,

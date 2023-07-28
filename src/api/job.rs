@@ -1,10 +1,7 @@
-use actix_web::{get, post, put, web, HttpResponse};
+use actix_web::{delete, get, post, put, web, HttpResponse};
 
 use crate::{
-    api::errors::ApiError,
-    dtos::job_dto::JobDto,
-    entity::job::Job,
-    repository::{errors::NotFoundError, job_repository},
+    api::errors::ApiError, dtos::job_dto::JobDto, entity::job::Job, repository::job_repository,
     AppState,
 };
 
@@ -42,14 +39,18 @@ async fn update(
     let job_id = id.into_inner();
     let job: Job = body.into_inner().into();
 
-    match job_repository::get_by_id_async(&data.db, job_id).await {
-        Ok(_) => (),
-        Err(err) => return Err(ApiError::from(err)),
-    };
-
     let result = job_repository::update_async(&data.db, job_id, job).await?;
 
     return Ok(HttpResponse::Ok().json(result));
+}
+
+#[delete("/{id}")]
+async fn delete(data: web::Data<AppState>, id: web::Path<i32>) -> Result<HttpResponse> {
+    let job_id = id.into_inner();
+
+    job_repository::delete_async(&data.db, job_id).await?;
+
+    return Ok(HttpResponse::NoContent().finish());
 }
 
 pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
@@ -57,7 +58,8 @@ pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
         .service(get_all)
         .service(get_by_id)
         .service(create)
-        .service(update);
+        .service(update)
+        .service(delete);
 
     cfg.service(scope);
 }

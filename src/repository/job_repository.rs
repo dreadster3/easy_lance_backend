@@ -68,3 +68,16 @@ pub async fn update_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32, job: Job) 
 
     return result;
 }
+
+pub async fn delete_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Result<Job> {
+    let result = match sqlx::query_as!(Job, "DELETE FROM tb_jobs WHERE id = $1 RETURNING *", id)
+        .fetch_one(pool)
+        .await
+    {
+        Ok(job) => Ok(job),
+        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
