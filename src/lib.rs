@@ -43,7 +43,7 @@ impl AppState {
 
         let jwt = auth::jwt_configuration::JwtConfiguration {
             secret: std::env::var("JWT_SECRET").unwrap(),
-            expiration: std::env::var("JWT_EXPIRATION")
+            expiration: std::env::var("JWT_EXPIRATION_IN_SECS")
                 .unwrap()
                 .parse::<u32>()
                 .unwrap(),
