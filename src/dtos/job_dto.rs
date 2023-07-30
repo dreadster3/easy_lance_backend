@@ -11,6 +11,8 @@ pub struct JobDto {
     pub end_date: chrono::DateTime<chrono::Utc>,
 
     pub job_type_id: i32,
+
+    pub job_rate_id: i32,
 }
 
 impl JobDto {
@@ -22,6 +24,7 @@ impl JobDto {
             self.start_date,
             self.end_date,
             self.job_type_id,
+            self.job_rate_id,
         )
     }
 }

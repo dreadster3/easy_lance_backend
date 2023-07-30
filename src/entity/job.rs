@@ -22,6 +22,8 @@ pub struct Job {
     #[serde(skip_serializing)]
     pub user_id: i32,
 
+    pub job_rate_id: i32,
+
     pub job_type_id: i32,
 }
 
@@ -33,6 +35,7 @@ impl Job {
         start_date: chrono::DateTime<chrono::Utc>,
         end_date: chrono::DateTime<chrono::Utc>,
         job_type_id: i32,
+        job_rate_id: i32,
     ) -> Self {
         Self {
             id: 0i32,
@@ -44,6 +47,7 @@ impl Job {
             created_at: Option::from(chrono::Local::now().naive_local()),
             modified_at: Option::from(chrono::Local::now().naive_local()),
             job_type_id,
+            job_rate_id,
         }
     }
 }
