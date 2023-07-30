@@ -1,13 +1,9 @@
-use bigdecimal::BigDecimal;
 use serde::Serialize;
 
 #[derive(Debug, Serialize, sqlx::FromRow)]
-pub struct JobRate {
+pub struct JobRateCurve {
     pub id: i32,
-    pub rate: BigDecimal,
-    pub threshold: i32,
-
-    pub job_rate_curve_id: i32,
+    pub name: String,
 
     #[serde(skip_serializing)]
     pub user_id: i32,
@@ -18,13 +14,11 @@ pub struct JobRate {
     pub created_at: Option<chrono::NaiveDateTime>,
 }
 
-impl JobRate {
-    pub fn new(user_id: i32, job_rate_curve_id: i32, rate: BigDecimal, threshold: i32) -> Self {
+impl JobRateCurve {
+    pub fn new(user_id: i32, name: String) -> Self {
         Self {
             id: 0i32,
-            job_rate_curve_id,
-            rate,
-            threshold,
+            name,
             user_id,
             created_at: Option::from(chrono::Local::now().naive_local()),
             modified_at: Option::from(chrono::Local::now().naive_local()),

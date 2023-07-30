@@ -1,12 +1,8 @@
-use actix_web::{
-    delete, get, post, put,
-    web::{self, Json},
-    HttpResponse,
-};
+use actix_web::{delete, get, post, put, web, HttpResponse};
 
 use crate::{
-    auth::user_identity::UserIdentity, dtos::job_rate_dto::JobRateDto,
-    repository::job_rate_repository, AppState,
+    auth::user_identity::UserIdentity, dtos::job_rate_curve_dto::JobRateCurveDto,
+    repository::job_rate_curve_repository, AppState,
 };
 
 use super::errors::ApiError;
@@ -15,7 +11,7 @@ type Result<T> = std::result::Result<T, ApiError>;
 
 #[get("")]
 async fn get_all(data: web::Data<AppState>, identity: UserIdentity) -> Result<HttpResponse> {
-    let result = job_rate_repository::get_all_async(&data.db, identity.id).await?;
+    let result = job_rate_curve_repository::get_all_async(&data.db, identity.id).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
@@ -27,7 +23,7 @@ async fn get_by_id(
     id: web::Path<i32>,
 ) -> Result<HttpResponse> {
     let result =
-        job_rate_repository::get_by_id_async(&data.db, identity.id, id.into_inner()).await?;
+        job_rate_curve_repository::get_by_id_async(&data.db, identity.id, id.into_inner()).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
@@ -36,12 +32,13 @@ async fn get_by_id(
 async fn create(
     data: web::Data<AppState>,
     identity: UserIdentity,
-    body: Json<JobRateDto>,
+    job_rate_curve: web::Json<JobRateCurveDto>,
 ) -> Result<HttpResponse> {
     let user_id = identity.id;
-    let job_rate = body.into_inner().to_entity(user_id);
+    let job_rate_curve = job_rate_curve.into_inner().to_entity(user_id);
 
-    let result = job_rate_repository::create_async(&data.db, user_id, job_rate).await?;
+    let result =
+        job_rate_curve_repository::create_async(&data.db, identity.id, job_rate_curve).await?;
 
     return Ok(HttpResponse::Created().json(result));
 }
@@ -51,13 +48,18 @@ async fn update(
     data: web::Data<AppState>,
     identity: UserIdentity,
     id: web::Path<i32>,
-    body: Json<JobRateDto>,
+    job_rate_curve: web::Json<JobRateCurveDto>,
 ) -> Result<HttpResponse> {
     let user_id = identity.id;
-    let job_rate = body.into_inner().to_entity(user_id);
+    let job_rate_curve = job_rate_curve.into_inner().to_entity(user_id);
 
-    let result =
-        job_rate_repository::update_async(&data.db, user_id, id.into_inner(), job_rate).await?;
+    let result = job_rate_curve_repository::update_async(
+        &data.db,
+        identity.id,
+        id.into_inner(),
+        job_rate_curve,
+    )
+    .await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
@@ -68,13 +70,13 @@ async fn delete(
     identity: UserIdentity,
     id: web::Path<i32>,
 ) -> Result<HttpResponse> {
-    job_rate_repository::delete_async(&data.db, identity.id, id.into_inner()).await?;
+    job_rate_curve_repository::delete_async(&data.db, identity.id, id.into_inner()).await?;
 
     return Ok(HttpResponse::NoContent().finish());
 }
 
 pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
-    let scope = actix_web::web::scope("jobrates")
+    let scope = actix_web::web::scope("jobratecurves")
         .service(get_all)
         .service(get_by_id)
         .service(create)

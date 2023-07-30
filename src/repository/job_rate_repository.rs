@@ -52,10 +52,11 @@ pub async fn create_async(
 ) -> Result<JobRate> {
     let result = match sqlx::query_as!(
         JobRate,
-        "INSERT INTO tb_job_rates (rate, threshold, user_id) VALUES ($1, $2, $3) RETURNING *",
+        "INSERT INTO tb_job_rates (rate, threshold, user_id, job_rate_curve_id) VALUES ($1, $2, $3, $4) RETURNING *",
         job_rate.rate,
         job_rate.threshold,
-        user_id
+        user_id,
+        job_rate.job_rate_curve_id
     )
     .fetch_one(pool)
     .await
