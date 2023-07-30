@@ -119,3 +119,43 @@ pub async fn delete_async(
 
     return result;
 }
+
+pub async fn check_exists_by_id_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+    id: i32,
+) -> Result<bool> {
+    let result = match sqlx::query!(
+        "SELECT EXISTS(SELECT 1 FROM tb_job_rate_curves WHERE user_id = $1 AND id = $2)",
+        user_id,
+        id
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(row) => Ok(row.exists.unwrap()),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
+
+pub async fn check_duplicate_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+    job_rate_curve: JobRateCurve,
+) -> Result<bool> {
+    let result = match sqlx::query!(
+        "SELECT EXISTS(SELECT 1 FROM tb_job_rate_curves WHERE user_id = $1 AND name = $2)",
+        user_id,
+        job_rate_curve.name,
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(row) => Ok(row.exists.unwrap()),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}

@@ -5,8 +5,10 @@ use actix_web::{
 };
 
 use crate::{
-    auth::user_identity::UserIdentity, dtos::job_rate_dto::JobRateDto,
-    repository::job_rate_repository, AppState,
+    auth::user_identity::UserIdentity,
+    dtos::job_rate_dto::JobRateDto,
+    repository::{job_rate_curve_repository, job_rate_repository},
+    AppState,
 };
 
 use super::errors::ApiError;
@@ -41,6 +43,22 @@ async fn create(
     let user_id = identity.id;
     let job_rate = body.into_inner().to_entity(user_id);
 
+    // Check if associated curve exists
+    if !job_rate_curve_repository::check_exists_by_id_async(
+        &data.db,
+        user_id,
+        job_rate.job_rate_curve_id,
+    )
+    .await?
+    {
+        return Err(ApiError::DependencyError(job_rate.job_rate_curve_id));
+    }
+
+    // Check if duplicate
+    if job_rate_repository::check_duplicate_async(&data.db, user_id, &job_rate).await? {
+        return Err(ApiError::DuplicateError("Job Rate".to_string()));
+    }
+
     let result = job_rate_repository::create_async(&data.db, user_id, job_rate).await?;
 
     return Ok(HttpResponse::Created().json(result));
@@ -55,6 +73,22 @@ async fn update(
 ) -> Result<HttpResponse> {
     let user_id = identity.id;
     let job_rate = body.into_inner().to_entity(user_id);
+
+    // Check if associated curve exists
+    if !job_rate_curve_repository::check_exists_by_id_async(
+        &data.db,
+        user_id,
+        job_rate.job_rate_curve_id,
+    )
+    .await?
+    {
+        return Err(ApiError::DependencyError(job_rate.job_rate_curve_id));
+    }
+
+    // Check if duplicate
+    if job_rate_repository::check_duplicate_async(&data.db, user_id, &job_rate).await? {
+        return Err(ApiError::DuplicateError("Job Rate".to_string()));
+    }
 
     let result =
         job_rate_repository::update_async(&data.db, user_id, id.into_inner(), job_rate).await?;

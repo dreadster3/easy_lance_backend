@@ -1,8 +1,10 @@
 use actix_web::{delete, get, post, put, web, HttpResponse};
 
 use crate::{
-    auth::user_identity::UserIdentity, dtos::job_rate_curve_dto::JobRateCurveDto,
-    repository::job_rate_curve_repository, AppState,
+    auth::user_identity::UserIdentity,
+    dtos::job_rate_curve_dto::JobRateCurveDto,
+    repository::{job_rate_curve_repository, job_rate_repository},
+    AppState,
 };
 
 use super::errors::ApiError;
@@ -24,6 +26,19 @@ async fn get_by_id(
 ) -> Result<HttpResponse> {
     let result =
         job_rate_curve_repository::get_by_id_async(&data.db, identity.id, id.into_inner()).await?;
+
+    return Ok(HttpResponse::Ok().json(result));
+}
+
+#[get("/{id}/rates")]
+async fn get_rates_by_id(
+    data: web::Data<AppState>,
+    identity: UserIdentity,
+    id: web::Path<i32>,
+) -> Result<HttpResponse> {
+    let result =
+        job_rate_repository::get_by_job_rate_curve_id_async(&data.db, identity.id, id.into_inner())
+            .await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
@@ -81,7 +96,8 @@ pub fn register_routes(cfg: &mut actix_web::web::ServiceConfig) {
         .service(get_by_id)
         .service(create)
         .service(update)
-        .service(delete);
+        .service(delete)
+        .service(get_rates_by_id);
 
     cfg.service(scope);
 }

@@ -45,6 +45,27 @@ pub async fn get_by_id_async(
     return result;
 }
 
+pub async fn get_by_job_rate_curve_id_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+    job_rate_curve_id: i32,
+) -> Result<Vec<JobRate>> {
+    let result = match sqlx::query_as!(
+        JobRate,
+        "SELECT * FROM tb_job_rates WHERE job_rate_curve_id = $1 AND user_id = $2",
+        job_rate_curve_id,
+        user_id
+    )
+    .fetch_all(pool)
+    .await
+    {
+        Ok(jobs) => Ok(jobs),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
+
 pub async fn create_async(
     pool: &sqlx::Pool<sqlx::Postgres>,
     user_id: i32,
@@ -110,6 +131,27 @@ pub async fn delete_async(
     {
         Ok(job) => Ok(job),
         Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ById(id))),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
+
+pub async fn check_duplicate_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+    job_rate: &JobRate,
+) -> Result<bool> {
+    let result = match sqlx::query!(
+        "SELECT EXISTS(SELECT 1 FROM tb_job_rates WHERE user_id = $1 AND job_rate_curve_id = $2 AND threshold = $3)",
+        user_id,
+        job_rate.job_rate_curve_id,
+        job_rate.threshold
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(job) => Ok(job.exists.unwrap()),
         Err(err) => Err(RepositoryError::InternalError(err)),
     };
 

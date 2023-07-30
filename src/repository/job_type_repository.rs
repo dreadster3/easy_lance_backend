@@ -134,7 +134,7 @@ pub async fn delete_async(
     return result;
 }
 
-pub async fn check_duplicate_by_name(
+pub async fn check_exists_by_name_async(
     pool: &sqlx::Pool<sqlx::Postgres>,
     user_id: i32,
     name: &str,
@@ -148,6 +148,29 @@ pub async fn check_duplicate_by_name(
     .await
     {
         Ok(result) => Ok(result.exists.unwrap()),
+        Err(e) => Err(RepositoryError::InternalError(e)),
+    };
+
+    return result;
+}
+
+pub async fn check_exists_by_id_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+    id: i32,
+) -> Result<bool> {
+    let result = match sqlx::query!(
+        "SELECT EXISTS(SELECT 1 FROM tb_job_types WHERE id = $1 AND user_id = $2)",
+        id,
+        user_id
+    )
+    .fetch_one(pool)
+    .await
+    {
+        Ok(row) => {
+            log::info!("row: {:?}", row);
+            Ok(row.exists.unwrap())
+        }
         Err(e) => Err(RepositoryError::InternalError(e)),
     };
 

@@ -8,6 +8,8 @@ use crate::repository::errors::RepositoryError;
 pub enum ApiError {
     #[error("{0} already exists")]
     DuplicateError(String),
+    #[error("Dependecy entity with id {0} not found")]
+    DependencyError(i32),
     #[error("{0}")]
     RepositoryError(RepositoryError),
     #[error("Unauthorized")]
@@ -18,6 +20,7 @@ impl ResponseError for ApiError {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
             ApiError::RepositoryError(err) => err.status_code(),
+            ApiError::DependencyError(_) => actix_web::http::StatusCode::BAD_REQUEST,
             ApiError::DuplicateError(_) => actix_web::http::StatusCode::BAD_REQUEST,
             ApiError::UnauthorizedError => actix_web::http::StatusCode::UNAUTHORIZED,
         }
