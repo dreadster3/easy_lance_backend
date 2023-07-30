@@ -143,7 +143,7 @@ pub async fn check_exists_by_id_async(
 pub async fn check_duplicate_async(
     pool: &sqlx::Pool<sqlx::Postgres>,
     user_id: i32,
-    job_rate_curve: JobRateCurve,
+    job_rate_curve: &JobRateCurve,
 ) -> Result<bool> {
     let result = match sqlx::query!(
         "SELECT EXISTS(SELECT 1 FROM tb_job_rate_curves WHERE user_id = $1 AND name = $2)",

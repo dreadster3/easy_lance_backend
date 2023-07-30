@@ -52,6 +52,10 @@ async fn create(
     let user_id = identity.id;
     let job_rate_curve = job_rate_curve.into_inner().to_entity(user_id);
 
+    if job_rate_curve_repository::check_duplicate_async(&data.db, user_id, &job_rate_curve).await? {
+        return Err(ApiError::DuplicateError("Job Rate Curve".to_string()));
+    }
+
     let result =
         job_rate_curve_repository::create_async(&data.db, identity.id, job_rate_curve).await?;
 

@@ -167,10 +167,7 @@ pub async fn check_exists_by_id_async(
     .fetch_one(pool)
     .await
     {
-        Ok(row) => {
-            log::info!("row: {:?}", row);
-            Ok(row.exists.unwrap())
-        }
+        Ok(row) => Ok(row.exists.unwrap()),
         Err(e) => Err(RepositoryError::InternalError(e)),
     };
 
