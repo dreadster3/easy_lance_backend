@@ -20,6 +20,34 @@ CREATE TABLE tb_job_types (
 	FOREIGN KEY (user_id) REFERENCES tb_users(id)
 );
 
+CREATE TABLE tb_job_rate_curves (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+
+	user_id INT NOT NULL,
+
+	modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY (user_id) REFERENCES tb_users(id)
+);
+
+CREATE TABLE tb_job_rates (
+	id SERIAL PRIMARY KEY,
+	rate DECIMAL(10,2) NOT NULL,
+	threshold INT NOT NULL,
+
+	job_rate_curve_id INT NOT NULL,
+
+	user_id INT NOT NULL,
+
+	modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY (job_rate_curve_id) REFERENCES tb_job_rate_curves(id),
+	FOREIGN KEY (user_id) REFERENCES tb_users(id)
+);
+
 CREATE TABLE tb_jobs (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(255) NOT NULL,
@@ -28,12 +56,14 @@ CREATE TABLE tb_jobs (
 	start_date TIMESTAMPTZ NOT NULL,
 	end_date TIMESTAMPTZ NOT NULL,
 
+	job_rate_curve_id INT NOT NULL,
 	user_id INT NOT NULL,
 
 	modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
 	FOREIGN KEY (job_type_id) REFERENCES tb_job_types(id),
+	FOREIGN KEY (job_rate_curve_id) REFERENCES tb_job_rate_curves(id),
 	FOREIGN KEY (user_id) REFERENCES tb_users(id)
 );
 

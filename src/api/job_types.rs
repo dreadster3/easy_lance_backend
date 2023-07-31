@@ -40,7 +40,9 @@ async fn create(
 ) -> Result<HttpResponse> {
     let job_type = body.into_inner().to_entity(identity.id);
 
-    if job_type_repository::check_duplicate_by_name(&data.db, identity.id, &job_type.name).await? {
+    if job_type_repository::check_exists_by_name_async(&data.db, identity.id, &job_type.name)
+        .await?
+    {
         return Err(ApiError::DuplicateError("JobType".to_string()));
     }
 
@@ -59,7 +61,9 @@ async fn update(
     let job_type_id = id.into_inner();
     let job_type: JobType = body.into_inner().to_entity(identity.id);
 
-    if job_type_repository::check_duplicate_by_name(&data.db, identity.id, &job_type.name).await? {
+    if job_type_repository::check_exists_by_name_async(&data.db, identity.id, &job_type.name)
+        .await?
+    {
         return Err(ApiError::DuplicateError("JobType".to_string()));
     }
 
