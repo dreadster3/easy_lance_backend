@@ -15,9 +15,9 @@ async fn main() -> std::io::Result<()> {
 
     return HttpServer::new(move || {
         let cors = actix_cors::Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_headers(vec![actix_web::http::header::AUTHORIZATION])
             .max_age(3600);
 
         return App::new()
