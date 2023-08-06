@@ -14,9 +14,16 @@ async fn main() -> std::io::Result<()> {
     let app_state = AppState::init().await;
 
     return HttpServer::new(move || {
+        let cors = actix_cors::Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_headers(vec![actix_web::http::header::AUTHORIZATION])
+            .max_age(3600);
+
         return App::new()
             .app_data(web::Data::new(app_state.clone()))
             .wrap(Logger::default())
+            .wrap(cors)
             .wrap(NormalizePath::trim())
             .configure(api::routes::register_routes);
     })

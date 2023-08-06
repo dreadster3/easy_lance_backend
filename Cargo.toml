@@ -16,3 +16,4 @@ serde_json = "1.0.103"
 sqlx = { version = "0.7.1", features = ["postgres", "runtime-tokio", "chrono", "bigdecimal"] }
 thiserror = "1.0.44"
 bigdecimal = { version = "0.3.0", features = ["serde"] }
+actix-cors = "0.6.4"
