@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::dtos::job_type_dto::JobTypeDto;
+
 
 #[derive(Serialize, sqlx::FromRow)]
 pub struct JobType {

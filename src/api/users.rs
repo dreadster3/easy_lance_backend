@@ -5,10 +5,10 @@ use actix_web::{
     HttpRequest, HttpResponse,
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use jsonwebtoken::{encode, DecodingKey, EncodingKey, Header};
+
 
 use crate::{
-    auth::{token::Identity, token_claims::TokenClaims},
+    auth::{token::Identity},
     dtos::{token_dto::TokenDto, user_login_dto::UserLoginDto, user_register_dto::UserRegisterDto},
     entity::user::User,
     repository::user_repository,
