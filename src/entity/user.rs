@@ -9,6 +9,10 @@ pub struct User {
 
     #[serde(skip_serializing)]
     pub password: String,
+
+    #[serde(skip_serializing)]
+    pub refresh_token: Option<String>,
+
     #[serde(skip_serializing)]
     pub created_at: Option<chrono::NaiveDateTime>,
     #[serde(skip_serializing)]
@@ -22,6 +26,7 @@ impl User {
             username,
             email,
             password,
+            refresh_token: None,
             created_at: Option::from(chrono::Local::now().naive_local()),
             modified_at: Option::from(chrono::Local::now().naive_local()),
         }
