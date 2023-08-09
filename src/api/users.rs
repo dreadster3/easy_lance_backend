@@ -6,9 +6,8 @@ use actix_web::{
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 
-
 use crate::{
-    auth::{token::Identity},
+    auth::token::Identity,
     dtos::{token_dto::TokenDto, user_login_dto::UserLoginDto, user_register_dto::UserRegisterDto},
     entity::user::User,
     repository::user_repository,
@@ -53,7 +52,7 @@ pub async fn login(data: web::Data<AppState>, body: Json<UserLoginDto>) -> Resul
     let refresh_token = identity.generate_token(&data.refresh_jwt);
 
     // Save refresh token in database
-    user_repository::set_refresh_token_async(&data.db, result.id, refresh_token.clone()).await?;
+    user_repository::update_refresh_token_async(&data.db, result.id, refresh_token.clone()).await?;
 
     let refresh_cookie = Cookie::build("refresh_token", refresh_token.clone())
         .path("/")
@@ -103,7 +102,7 @@ pub async fn refresh(data: web::Data<AppState>, request: HttpRequest) -> Result<
     let refresh_token = token_identity.generate_token(&data.refresh_jwt);
 
     // Save refresh token in database
-    user_repository::set_refresh_token_async(&data.db, user_id, refresh_token.clone()).await?;
+    user_repository::update_refresh_token_async(&data.db, user_id, refresh_token.clone()).await?;
 
     let refresh_cookie = Cookie::build("refresh_token", refresh_token.clone())
         .path("/")

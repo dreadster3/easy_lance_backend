@@ -80,7 +80,7 @@ pub async fn get_by_id_async(pool: &sqlx::Pool<sqlx::Postgres>, id: i32) -> Resu
     return result;
 }
 
-pub async fn set_refresh_token_async(
+pub async fn update_refresh_token_async(
     pool: &sqlx::Pool<sqlx::Postgres>,
     id: i32,
     refresh_token: String,
