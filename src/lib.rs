@@ -22,6 +22,7 @@ fn get_database_url() -> String {
 pub struct AppState {
     pub db: sqlx::Pool<sqlx::Postgres>,
     pub jwt: auth::jwt_configuration::JwtConfiguration,
+    pub refresh_jwt: auth::jwt_configuration::JwtConfiguration,
 }
 
 impl AppState {
@@ -49,6 +50,18 @@ impl AppState {
                 .unwrap(),
         };
 
-        Self { db, jwt }
+        let refresh_jwt = auth::jwt_configuration::JwtConfiguration {
+            secret: std::env::var("JWT_REFRESH_SECRET").unwrap(),
+            expiration: std::env::var("JWT_REFRESH_EXPIRATION_IN_SECS")
+                .unwrap()
+                .parse::<u32>()
+                .unwrap(),
+        };
+
+        Self {
+            db,
+            jwt,
+            refresh_jwt,
+        }
     }
 }

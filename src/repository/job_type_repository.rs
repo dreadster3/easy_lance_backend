@@ -45,31 +45,6 @@ pub async fn get_by_id_async(
     return result;
 }
 
-pub async fn get_by_name_async(
-    pool: &sqlx::Pool<sqlx::Postgres>,
-    user_id: i32,
-    name: &str,
-) -> Result<JobType> {
-    let result = match sqlx::query_as!(
-        JobType,
-        "SELECT * FROM tb_job_types WHERE name = $1 AND user_id = $2",
-        name,
-        user_id
-    )
-    .fetch_one(pool)
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(sqlx::Error::RowNotFound) => Err(RepositoryError::from(NotFoundError::ByProperty(
-            "name".to_string(),
-            name.to_string(),
-        ))),
-        Err(e) => Err(RepositoryError::InternalError(e)),
-    };
-
-    return result;
-}
-
 pub async fn create_async(pool: &sqlx::Pool<sqlx::Postgres>, job_type: JobType) -> Result<JobType> {
     let result = match sqlx::query_as!(
         JobType,
