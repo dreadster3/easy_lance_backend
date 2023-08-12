@@ -36,9 +36,12 @@ async fn get_rates_by_id(
     identity: UserIdentity,
     id: web::Path<i32>,
 ) -> Result<HttpResponse> {
-    let result =
-        job_rate_repository::get_by_job_rate_curve_id_async(&data.db, identity.id, id.into_inner())
-            .await?;
+    let result = job_rate_curve_repository::get_all_with_job_rates_async(
+        &data.db,
+        id.into_inner(),
+        identity.id,
+    )
+    .await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }
