@@ -2,7 +2,9 @@ pub mod api;
 mod auth;
 mod dtos;
 mod entity;
+mod models;
 mod repository;
+mod service;
 
 fn get_database_url() -> String {
     let database_url = match std::env::var("DATABASE_URL") {

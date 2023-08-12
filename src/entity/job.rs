@@ -1,30 +1,14 @@
-use serde::{Deserialize, Serialize};
-
-//TODO: Change rates to be individual to each job
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow)]
 pub struct Job {
     pub id: i32,
-
     pub name: String,
-
     pub description: String,
-
-    #[serde(with = "chrono::serde::ts_seconds_option")]
     pub start_date: Option<chrono::DateTime<chrono::Utc>>,
-
-    #[serde(with = "chrono::serde::ts_seconds_option")]
     pub end_date: Option<chrono::DateTime<chrono::Utc>>,
-
-    #[serde(skip_serializing)]
     pub modified_at: Option<chrono::NaiveDateTime>,
-    #[serde(skip_serializing)]
     pub created_at: Option<chrono::NaiveDateTime>,
-
-    #[serde(skip_serializing)]
     pub user_id: i32,
-
     pub job_rate_curve_id: i32,
-
     pub job_type_id: i32,
 }
 

@@ -1,8 +1,6 @@
 use serde::Serialize;
 
-
-
-#[derive(Serialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct JobType {
     pub id: i32,
 
