@@ -2,7 +2,7 @@ use actix_web::{HttpResponse, ResponseError};
 use serde_json::json;
 use thiserror::Error;
 
-use crate::repository::errors::RepositoryError;
+use crate::{repository::errors::RepositoryError, service::errors::ServiceError};
 
 #[derive(Debug, Error)]
 pub enum ApiError {
@@ -12,6 +12,8 @@ pub enum ApiError {
     DependencyError(i32),
     #[error("{0}")]
     RepositoryError(RepositoryError),
+    #[error("{0}")]
+    ServiceError(ServiceError),
     #[error("Unauthorized")]
     UnauthorizedError,
 }
@@ -23,6 +25,7 @@ impl ResponseError for ApiError {
             ApiError::DependencyError(_) => actix_web::http::StatusCode::BAD_REQUEST,
             ApiError::DuplicateError(_) => actix_web::http::StatusCode::BAD_REQUEST,
             ApiError::UnauthorizedError => actix_web::http::StatusCode::UNAUTHORIZED,
+            ApiError::ServiceError(err) => err.status_code(),
         }
     }
 
@@ -44,5 +47,11 @@ impl ResponseError for ApiError {
 impl From<RepositoryError> for ApiError {
     fn from(error: RepositoryError) -> Self {
         ApiError::RepositoryError(error)
+    }
+}
+
+impl From<ServiceError> for ApiError {
+    fn from(error: ServiceError) -> Self {
+        ApiError::ServiceError(error)
     }
 }

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use sqlx::{postgres::PgRow, FromRow, Row};
 
-use super::{job_rate_curve::JobRateCurve, job_type::JobType, traits::FromRowPrefixed};
+use super::{job_type::JobType, traits::FromRowPrefixed};
 
 #[derive(Debug, Serialize)]
 pub struct Job {
@@ -26,8 +26,6 @@ pub struct Job {
     pub user_id: i32,
 
     pub job_rate_curve_id: i32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub job_rate_curve: Option<JobRateCurve>,
 
     pub job_type_id: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -61,10 +59,6 @@ impl FromRowPrefixed<'_, PgRow> for Job {
                 Err(_) => None,
             },
             job_rate_curve_id: row.try_get(format!("{}job_rate_curve_id", prefix).as_str())?,
-            job_rate_curve: match JobRateCurve::from_row_prefixed(row, "job_rate_curve") {
-                Ok(jrc) => Some(jrc),
-                Err(_) => None,
-            },
         })
     }
 }
@@ -91,7 +85,6 @@ impl Job {
             job_type_id,
             job_type: None,
             job_rate_curve_id,
-            job_rate_curve: None,
         }
     }
 }

@@ -6,6 +6,7 @@ use crate::{
     dtos::job_dto::JobDto,
     entity::job::Job,
     repository::{job_rate_curve_repository, job_repository, job_type_repository},
+    service::job_service,
     AppState,
 };
 
@@ -13,7 +14,7 @@ type Result<T> = std::result::Result<T, ApiError>;
 
 #[get("")]
 async fn get_all(data: web::Data<AppState>, identity: UserIdentity) -> Result<HttpResponse> {
-    let result = job_repository::get_all_async(&data.db, identity.id).await?;
+    let result = job_service::get_all_async(&data.db, identity.id).await?;
 
     return Ok(HttpResponse::Ok().json(result));
 }

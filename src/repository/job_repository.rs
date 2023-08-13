@@ -94,3 +94,31 @@ pub async fn delete_async(pool: &sqlx::Pool<sqlx::Postgres>, user_id: i32, id: i
 
     return result;
 }
+
+pub async fn get_all_with_type_async(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    user_id: i32,
+) -> Result<Vec<Job>> {
+    let result = match sqlx::query_as(
+        r#"
+        SELECT j.*,
+            jt.id AS "job_type_id",
+            jt.name AS "job_type_name",
+            jt.user_id AS "job_type_user_id",
+            jt.created_at AS "job_type_created_at",
+            jt.modified_at AS "job_type_modified_at"
+        FROM tb_jobs j
+        JOIN tb_job_types jt
+            ON j.job_type_id = jt.id
+        WHERE j.user_id = $1"#,
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+    {
+        Ok(jobs) => Ok(jobs),
+        Err(err) => Err(RepositoryError::InternalError(err)),
+    };
+
+    return result;
+}
