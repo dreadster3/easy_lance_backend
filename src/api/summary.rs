@@ -20,6 +20,7 @@ async fn get_category_summary(
 
     let result = jobs
         .into_iter()
+        .sorted_by_key(|job| job.job_type_id)
         .group_by(|job| job.job_type_id)
         .into_iter()
         .map(|(_, value)| {
